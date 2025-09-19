@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="vi" class="scroll-smooth">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>📮 WebApp sinh prompt chủ nhiệm – Bản lung linh</title>
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="description" content="Sinh nhanh các mẫu tin nhắn chủ nhiệm với giao diện lung linh: gradient, glassmorphism, ripple, dark mode.">
+  <style>
+    :root{
+      --brandA: #6d28d9; /* indigo-700 */
+      --brandB: #22c55e; /* emerald-500 */
+      --brandC: #06b6d4; /* cyan-500 */
+      --card: rgba(255,255,255,.78);
+      --glass: rgba(255,255,255,.55);
+    }
+    @media (prefers-color-scheme: dark){
+      :root{
+        --card: rgba(17,24,39,.72);
+        --glass: rgba(17,24,39,.55);
+      }
+    }
+    /* Animated gradient header */
+    .gradbar {
+      background: linear-gradient(110deg, var(--brandA), var(--brandB), var(--brandC));
+      background-size: 200% 200%;
+      animation: gradientShift 12s ease infinite;
+    }
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    /* Glass card */
+    .glass {
+      background: var(--card);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(0,0,0,.06);
+      box-shadow:
+        0 10px 30px rgba(2,6,23,.08),
+        inset 0 1px 0 rgba(255,255,255,.4);
+      border-radius: 16px;
+    }
+    /* Pretty focus */
+    .nice-focus:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(99,102,241,.35);
+      border-color: rgb(99,102,241);
+    }
+    /* Buttons */
+    .btn {
+      position: relative; overflow: hidden;
+      transition: transform .08s ease, box-shadow .2s ease, filter .25s ease;
+      border-radius: 12px; font-weight: 600;
+    }
+    .btn:active { transform: translateY(1px) scale(.99); }
+    .btn-primary {
+      background: linear-gradient(120deg, #4f46e5, #06b6d4);
+      color: white;
+      box-shadow: 0 10px 20px rgba(79,70,229,.25);
+    }
+    .btn-primary:hover { filter: brightness(1.06); }
+    .btn-ghost {
+      background: linear-gradient(120deg, #0ea5e9, #22c55e);
+      color: white;
+    }
+    .btn-dark {
+      background: #0f172a; color: #fff;
+    }
+    .btn-outline {
+      background: transparent; border: 1px solid rgba(15,23,42,.2);
+    }
+    /* Ripple */
+    .btn .ripple {
+      position: absolute; border-radius: 50%; transform: scale(0);
+      background: rgba(255,255,255,.5); animation: ripple .6s linear;
+      pointer-events: none;
+    }
+    @keyframes ripple {
+      to { transform: scale(4); opacity: 0; }
+    }
+    /* Glow ring title */
+    .glow {
+      text-shadow: 0 1px 0 rgba(255,255,255,.6), 0 8px 30px rgba(79,70,229,.35);
+    }
+    /* Output textarea styling */
+    .paper {
+      background:
+        radial-gradient(1200px 400px at 0 -10%, rgba(79,70,229,.05), transparent),
+        radial-gradient(800px 400px at 100% 110%, rgba(14,165,233,.06), transparent),
+        #ffffff;
+      border: 1px solid rgba(2,6,23,.08);
+      border-radius: 14px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 10px 24px rgba(2,6,23,.08);
+    }
+    .meter{
+      height: 6px; border-radius: 9999px; background: rgba(2,6,23,.08);
+      position: relative; overflow: hidden;
+    }
+    .meter>span{
+      position:absolute; inset:0;
+      background: linear-gradient(90deg,#22c55e,#06b6d4,#4f46e5);
+      background-size: 200% 100%;
+      animation: gradientShift 8s ease infinite;
+      border-radius: 9999px;
+      transform-origin:left center;
+      transform: scaleX(0);
+    }
+    /* Tag pill */
+    .pill {
+      background: rgba(99,102,241,.1);
+      color: #4338ca;
+      border: 1px solid rgba(79,70,229,.25);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50 relative selection:bg-indigo-100 selection:text-indigo-900">
+  <!-- Header -->
+  <div class="gradbar py-6 shadow-md">
+    <header class="max-w-6xl mx-auto px-4 flex items-center justify-between">
+      <h1 class="text-2xl md:text-3xl font-black text-white glow">📮 WebApp sinh prompt chủ nhiệm</h1>
+      <div class="hidden md:flex items-center gap-2 text-white/90">
+        <span class="pill px-3 py-1 rounded-full text-xs backdrop-blur">Lung linh v2</span>
+        <span class="pill px-3 py-1 rounded-full text-xs backdrop-blur">Made for GVCN</span>
+      </div>
+    </header>
+  </div>
+
+  <!-- Container -->
+  <main class="max-w-6xl mx-auto px-4 -mt-6 md:-mt-8 pb-10 grid md:grid-cols-5 gap-4">
+    <!-- Left column -->
+    <section class="md:col-span-2 space-y-4">
+      <div class="glass p-4 md:p-5 space-y-3">
+        <h2 class="font-semibold text-lg flex items-center gap-2">1) Loại tin nhắn
+          <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">Chọn nhóm</span>
+        </h2>
+        <label class="block text-sm">Nhóm</label>
+        <select id="group" class="w-full border rounded-lg p-2 nice-focus bg-white/70">
+          <option value="violation">Xử lý vi phạm nội quy</option>
+          <option value="encourage">Động viên – khích lệ (chung lớp)</option>
+          <option value="praise">Tuyên dương cá nhân/nhóm</option>
+          <option value="softremind">Nhắc nhở nhẹ nhàng</option>
+          <option value="inspire">Truyền cảm hứng – định hướng</option>
+          <option value="parents">Gửi phụ huynh (tổng kết, gắn kết)</option>
+        </select>
+
+        <div id="violationControls" class="space-y-2">
+          <label class="block text-sm">Mức độ (lần)</label>
+          <select id="level" class="w-full border rounded-lg p-2 nice-focus bg-white/70">
+            <option value="1">Lần 1 (nhẹ nhàng)</option>
+            <option value="2">Lần 2 (nghiêm túc hơn)</option>
+            <option value="3">Lần 3 (rõ ràng, quyết liệt)</option>
+          </select>
+
+          <label class="block text-sm">Loại vi phạm</label>
+          <select id="viotype" class="w-full border rounded-lg p-2 nice-focus bg-white/70">
+            <option value="đi học trễ">Đi học trễ</option>
+            <option value="đồng phục">Không mặc đúng đồng phục</option>
+            <option value="điện thoại">Sử dụng điện thoại sai quy định</option>
+            <option value="bài tập">Không hoàn thành bài tập</option>
+            <option value="lễ phép">Thiếu lễ phép</option>
+            <option value="khác">Khác (tự điền)</option>
+          </select>
+          <input id="viotypeCustom" placeholder="Mô tả vi phạm khác..." class="w-full border rounded-lg p-2 nice-focus hidden bg-white/70" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-sm">Gửi cho</label>
+            <select id="audience" class="w-full border rounded-lg p-2 nice-focus bg-white/70">
+              <option value="hs">Học sinh</option>
+              <option value="ph">Phụ huynh</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm">Giọng điệu</label>
+            <select id="tone" class="w-full border rounded-lg p-2 nice-focus bg-white/70">
+              <option value="mặc định">Mặc định</option>
+              <option value="ấm áp">Ấm áp</option>
+              <option value="nghiêm túc">Nghiêm túc</option>
+              <option value="truyền cảm hứng">Truyền cảm hứng</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass p-4 md:p-5 space-y-3">
+        <h2 class="font-semibold text-lg">2) Thông tin chèn tự động</h2>
+        <div class="grid grid-cols-2 gap-2">
+          <input id="student" class="border rounded-lg p-2 nice-focus bg-white/70" placeholder="Tên học sinh (vd: Thùy Trâm)" />
+          <input id="class" class="border rounded-lg p-2 nice-focus bg-white/70" placeholder="Lớp (vd: 10A8)" />
+          <input id="date" type="date" class="border rounded-lg p-2 nice-focus bg-white/70" />
+          <input id="groupname" class="border rounded-lg p-2 nice-focus bg-white/70" placeholder="Tên nhóm (vd: Nhóm 2)" />
+          <input id="achievement" class="border rounded-lg p-2 nice-focus bg-white/70" placeholder="Thành tích (vd: phát biểu tích cực)" />
+          <input id="teacher" class="border rounded-lg p-2 nice-focus bg-white/70" placeholder="Tên thầy/cô (vd: Thầy Lực)" />
+        </div>
+        <div class="flex flex-wrap items-center gap-3 pt-1">
+          <label class="flex items-center gap-2"><input id="useEmoji" type="checkbox" class="scale-110" checked> <span>Dùng emoji</span></label>
+          <label class="flex items-center gap-2"><input id="addHeader" type="checkbox" class="scale-110"> <span>Thêm mở đầu “Kính gửi…”</span></label>
+        </div>
+        <div class="meter mt-2"><span id="progress"></span></div>
+      </div>
+
+      <div class="glass p-4 md:p-5 space-y-3">
+        <h2 class="font-semibold text-lg">3) Hành động</h2>
+        <div class="flex flex-wrap gap-2">
+          <button id="btnGenerate" class="btn btn-primary px-4 py-2">Sinh nội dung</button>
+          <button id="btnCopy" class="btn btn-dark px-4 py-2">Copy</button>
+          <button id="btnDownload" class="btn btn-ghost px-4 py-2">Tải .txt</button>
+          <button id="btnReset" class="btn btn-outline px-3 py-2">Làm mới</button>
+        </div>
+        <p class="text-xs text-slate-500 mt-2">Mẹo: điền <em>Tên HS</em> + <em>Lớp</em> + <em>Ngày</em> trước khi sinh để cá nhân hoá.</p>
+      </div>
+
+      <div class="glass p-4 md:p-5 space-y-2">
+        <h2 class="font-semibold text-lg">4) Preset nhanh</h2>
+        <div class="flex flex-wrap gap-2 text-sm">
+          <button data-preset="late2hs" class="btn btn-outline px-3 py-1.5">Đi trễ lần 2 → HS</button>
+          <button data-preset="late3ph" class="btn btn-outline px-3 py-1.5">Đi trễ lần 3 → PH</button>
+          <button data-preset="praise" class="btn btn-outline px-3 py-1.5">Tuyên dương nhóm</button>
+          <button data-preset="enc" class="btn btn-outline px-3 py-1.5">Động viên lớp</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right column -->
+    <section class="md:col-span-3 space-y-3">
+      <div class="glass p-4 md:p-5 h-full">
+        <div class="flex items-center justify-between">
+          <h2 class="font-semibold text-lg">Nội dung sinh ra</h2>
+          <div class="text-xs text-slate-500 flex items-center gap-2">
+            <span id="charCount">0 kí tự</span>
+            <span class="hidden md:inline">•</span>
+            <span class="hidden md:inline">Tự động chèn tên, lớp, ngày…</span>
+          </div>
+        </div>
+        <textarea id="output" class="paper w-full h-[560px] mt-3 font-[Inter] leading-7 border rounded-lg p-4 resize-vertical nice-focus" placeholder="(Nội dung sẽ hiện ở đây)"></textarea>
+      </div>
+      <footer class="text-center text-xs text-slate-500 mt-2">© 2025 – Bản lung linh. Mọi chi tiết có thể chỉnh trong phần mã.</footer>
+    </section>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    // Elements
+    const groupEl = $("group");
+    const levelEl = $("level");
+    const viotypeEl = $("viotype");
+    const viotypeCustomEl = $("viotypeCustom");
+    const audienceEl = $("audience");
+    const toneEl = $("tone");
+    const studentEl = $("student");
+    const classEl = $("class");
+    const dateEl = $("date");
+    const groupnameEl = $("groupname");
+    const achievementEl = $("achievement");
+    const teacherEl = $("teacher");
+    const useEmojiEl = $("useEmoji");
+    const addHeaderEl = $("addHeader");
+    const outputEl = $("output");
+    const progressEl = $("progress");
+    const charCountEl = $("charCount");
+    const violationControls = $("violationControls");
+
+    function ripple(e){
+      const btn = e.currentTarget;
+      const circle = document.createElement("span");
+      const diameter = Math.max(btn.clientWidth, btn.clientHeight);
+      const radius = diameter / 2;
+      circle.style.width = circle.style.height = `${diameter}px`;
+      circle.style.left = `${e.clientX - btn.getBoundingClientRect().left - radius}px`;
+      circle.style.top = `${e.clientY - btn.getBoundingClientRect().top - radius}px`;
+      circle.classList.add("ripple");
+      const ripple = btn.getElementsByClassName("ripple")[0];
+      if (ripple) ripple.remove();
+      btn.appendChild(circle);
+    }
+    document.querySelectorAll(".btn").forEach(b => b.addEventListener("click", ripple));
+
+    // Toggle custom viotype
+    viotypeEl.addEventListener("change", () => {
+      viotypeCustomEl.classList.toggle("hidden", viotypeEl.value !== "khác");
+    });
+    // Toggle violation block
+    groupEl.addEventListener("change", () => {
+      violationControls.classList.toggle("hidden", groupEl.value !== "violation");
+    });
+
+    // Templates
+    const templates = {
+      violation: {
+        hs: {
+          1: (ctx) => `${ctx.emoji} Thầy ghi nhận ${ctx.studentTxt} chăm chỉ, nhưng hôm nay em ${ctx.viotypeTxt}. Đi đúng giờ và chấp hành nội quy giúp em học tốt và tôn trọng thầy cô, bạn bè. Thầy tin lần sau em sẽ chủ động hơn nhé!`,
+          2: (ctx) => `${ctx.emoji} Em đã ${ctx.viotypeTxt} lần thứ 2 (ngày ${ctx.dateTxt}). Thầy mong em nhìn lại nguyên nhân, sắp xếp thời gian hợp lý. Chấp hành nội quy thể hiện trách nhiệm và giúp em tự tin hơn. Thầy tin em sẽ thay đổi tích cực!`,
+          3: (ctx) => `${ctx.emoji} Đây là lần thứ 3 em ${ctx.viotypeTxt}. Thầy mong em nghiêm túc điều chỉnh ngay – đây là kỷ luật và trách nhiệm của một học sinh. Thầy tin em có bản lĩnh để thay đổi và chứng minh sự trưởng thành.`
+        },
+        ph: {
+          1: (ctx) => `Kính gửi quý phụ huynh, hôm nay em ${ctx.studentTxt} (${ctx.classTxt}) ${ctx.viotypeTxt}. Đây là lần đầu, thầy nhắc nhẹ để em rút kinh nghiệm. Mong gia đình động viên em giữ nề nếp ạ.`,
+          2: (ctx) => `Kính gửi quý phụ huynh, đây là lần thứ 2 em ${ctx.studentTxt} (${ctx.classTxt}) ${ctx.viotypeTxt} (ngày ${ctx.dateTxt}). Mong gia đình phối hợp nhắc nhở thêm để em hình thành thói quen tốt.`,
+          3: (ctx) => `Kính chào quý phụ huynh, em ${ctx.studentTxt} (${ctx.classTxt}) đã ${ctx.viotypeTxt} lần thứ 3. Đề nghị gia đình phối hợp chặt chẽ để em điều chỉnh kịp thời, tránh ảnh hưởng đến việc học và nề nếp lớp.`
+        }
+      },
+      encourage: {
+        all: (ctx) => `${ctx.emoji} Hôm nay thầy rất vui vì lớp ${ctx.classTxt} học tập nghiêm túc và đoàn kết. Mong các em giữ tinh thần này cho cả tuần nhé!`
+      },
+      praise: {
+        group: (ctx) => `${ctx.emoji} Chúc mừng ${ctx.groupnameTxt} đã làm việc tích cực trong tiết học hôm nay. Đây là tấm gương để cả lớp noi theo!`,
+        person: (ctx) => `${ctx.emoji} Bạn ${ctx.studentTxt} đã tiến bộ rõ rệt trong ${ctx.achievementTxt}. Mong các bạn khác học tập tinh thần chủ động này.`
+      },
+      softremind: {
+        hw: (ctx) => `${ctx.emoji} Một số bạn chưa hoàn thành bài tập. Các em sắp xếp lại thời gian để theo kịp bài nhé. Thầy tin các em làm được.`,
+        gear: (ctx) => `${ctx.emoji} Một số bạn quên mang sách vở, lần sau nhớ chuẩn bị đầy đủ nhé. Thói quen nhỏ giúp em học tốt hơn.`
+      },
+      inspire: {
+        a: (ctx) => `${ctx.emoji} Đi học không chỉ để lấy điểm, mà là hành trình rèn luyện sự kiên nhẫn và trách nhiệm. Hãy cố gắng từng ngày, thầy luôn đồng hành cùng các em.`,
+        b: (ctx) => `${ctx.emoji} Mỗi khó khăn là một cơ hội để trưởng thành. Thầy tin lớp mình đủ bản lĩnh để vượt qua mọi thử thách.`
+      },
+      parents: {
+        a: (ctx) => `Kính gửi quý phụ huynh, trong tuần qua lớp ${ctx.classTxt} đã có nhiều tiến bộ về nề nếp học tập. Chân thành cảm ơn gia đình đã luôn đồng hành.`,
+        b: (ctx) => `Nhà trường và gia đình là hai cánh tay giúp các em phát triển toàn diện. Mong quý phụ huynh tiếp tục phối hợp chặt chẽ để nhắc nhở con em giữ nề nếp và tinh thần học tập.`
+      }
+    };
+
+    function buildContext() {
+      const emojiMap = {
+        "mặc định": "✅",
+        "ấm áp": "💛",
+        "nghiêm túc": "⚠️",
+        "truyền cảm hứng": "🚀"
+      };
+      const emoji = $("useEmoji").checked ? (emojiMap[$("tone").value] || "✅") : "";
+      const studentTxt = studentEl.value || "em …";
+      const classTxt = classEl.value || "lớp …";
+      const dateTxt = dateEl.value || "…/…/…";
+      let viotype = viotypeEl.value === "khác" ? (viotypeCustomEl.value || "vi phạm nội quy") : viotypeEl.value;
+      const groupnameTxt = groupnameEl.value || "nhóm …";
+      const achievementTxt = achievementEl.value || "…";
+      const teacherTxt = teacherEl.value || "Thầy/Cô …";
+      return { emoji, studentTxt, classTxt, dateTxt, viotypeTxt: viotype, groupnameTxt, achievementTxt, teacherTxt };
+    }
+
+    function generate() {
+      const ctx = buildContext();
+      const group = groupEl.value;
+      const audience = audienceEl.value;
+      let text = "";
+
+      if (group === "violation") {
+        const lv = levelEl.value;
+        text = templates.violation[audience][lv](ctx);
+      } else if (group === "encourage") {
+        text = templates.encourage.all(ctx);
+      } else if (group === "praise") {
+        text = (groupnameEl.value ? templates.praise.group(ctx) : templates.praise.person(ctx));
+      } else if (group === "softremind") {
+        text = (achievementEl.value ? templates.softremind.hw(ctx) : templates.softremind.gear(ctx));
+      } else if (group === "inspire") {
+        text = (toneEl.value === "truyền cảm hứng" ? templates.inspire.b(ctx) : templates.inspire.a(ctx));
+      } else if (group === "parents") {
+        text = (achievementEl.value ? templates.parents.b(ctx) : templates.parents.a(ctx));
+      }
+
+      if (addHeaderEl.checked) {
+        if (audience === "ph") text = `Kính gửi quý phụ huynh,\n${text.replace(/^Kính.*?phụ huynh,?\s*/i, "")}`;
+        else text = `Chào em,\n${text}`;
+      }
+      if (ctx.teacherTxt && ctx.teacherTxt.trim() !== "") text += `\n\n${ctx.teacherTxt}`;
+
+      outputEl.value = text;
+      updateStats();
+    }
+
+    function updateStats(){
+      const len = outputEl.value.length;
+      charCountEl.textContent = `${len} kí tự`;
+      const fill = Math.min(1, len / 400);
+      progressEl.style.transform = `scaleX(${fill})`;
+    }
+
+    function copyToClipboard() {
+      outputEl.select();
+      document.execCommand("copy");
+      const btn = document.getElementById("btnCopy");
+      const old = btn.textContent;
+      btn.textContent = "Đã copy ✅";
+      setTimeout(() => (btn.textContent = old), 1200);
+    }
+
+    function downloadTxt() {
+      const blob = new Blob([outputEl.value || ""], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "tin-nhan-chu-nhiem.txt";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 0);
+    }
+
+    function resetAll() {
+      groupEl.value = "violation";
+      levelEl.value = "1";
+      viotypeEl.value = "đi học trễ";
+      viotypeCustomEl.value = "";
+      viotypeCustomEl.classList.add("hidden");
+      audienceEl.value = "hs";
+      toneEl.value = "mặc định";
+      studentEl.value = "";
+      classEl.value = "";
+      dateEl.value = "";
+      groupnameEl.value = "";
+      achievementEl.value = "";
+      teacherEl.value = "Thầy Lực";
+      $("useEmoji").checked = true;
+      $("addHeader").checked = false;
+      outputEl.value = "";
+      violationControls.classList.remove("hidden");
+      updateStats();
+    }
+
+    // Presets
+    document.querySelectorAll("[data-preset]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const key = btn.getAttribute("data-preset");
+        resetAll();
+        if (key === "late2hs") {
+          groupEl.value = "violation"; levelEl.value = "2"; audienceEl.value = "hs"; viotypeEl.value = "đi học trễ";
+          studentEl.value = "Thùy Trâm"; classEl.value = "10A8";
+        } else if (key === "late3ph") {
+          groupEl.value = "violation"; levelEl.value = "3"; audienceEl.value = "ph"; viotypeEl.value = "đi học trễ";
+          studentEl.value = "…"; classEl.value = "10A8";
+        } else if (key === "praise") {
+          groupEl.value = "praise"; groupnameEl.value = "Nhóm 2"; achievementEl.value = "thuyết trình xuất sắc";
+        } else if (key === "enc") {
+          groupEl.value = "encourage"; classEl.value = "10A8";
+        }
+        generate();
+      });
+    });
+
+    $("btnGenerate").addEventListener("click", generate);
+    $("btnCopy").addEventListener("click", copyToClipboard);
+    $("btnDownload").addEventListener("click", downloadTxt);
+    $("btnReset").addEventListener("click", resetAll);
+    outputEl.addEventListener("input", updateStats);
+
+    // Init
+    resetAll();
+  </script>
+</body>
+</html>
